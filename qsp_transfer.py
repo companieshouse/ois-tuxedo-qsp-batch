@@ -10,24 +10,20 @@ import logging
 
 from ftplib import FTP
 from datetime import datetime, timedelta
-from botocore.exceptions import ClientError
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def get_ftp_credentials():
-    try:
-        client = boto3.client('secretsmanager')
-        get_secret_value_response = client.get_secret_value(SecretId=os.environ['SECRET_NAME'])
-    except Exception as e:
-        raise e
-    else:
-        if 'SecretString' in get_secret_value_response:
-            secret = get_secret_value_response['SecretString']
-        else:
-            secret = base64.b64decode(get_secret_value_response['SecretBinary'])
+    client = boto3.client('secretsmanager')
+    get_secret_value_response = client.get_secret_value(SecretId=os.environ['SECRET_NAME'])
 
-        return json.loads(secret)
+    if 'SecretString' in get_secret_value_response:
+        secret = get_secret_value_response['SecretString']
+    else:
+        secret = base64.b64decode(get_secret_value_response['SecretBinary'])
+
+    return json.loads(secret)
 
 def create_data_file(date):
     if not re.match(r"\d{2}-\d{2}-\d{4}", date):
@@ -83,7 +79,6 @@ def transfer_data_file(path):
         response = ftp.storbinary(f"STOR {filename}", fp=file)
 
 def lambda_handler(event, context):
-
     try:
         logger.info(f'Event: {event}')
 
