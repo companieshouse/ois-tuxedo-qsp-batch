@@ -29,7 +29,7 @@ def get_ftp_credentials():
 
         return json.loads(secret)
 
-def get_data_file(date):
+def create_data_file(date):
     if not re.match(r"\d{2}-\d{2}-\d{4}", date):
         raise Exception(f"Date parameter value '{date}' does not match expected format DD-MM-YYYY")
 
@@ -72,6 +72,17 @@ def get_data_file(date):
 
     return file_path
 
+def transfer_data_file(path):
+    filename = os.path.basename(path)
+    credentials = get_ftp_credentials()
+
+    with FTP(os.environ['FTP_HOST']) as ftp, open(path, 'rb') as file:
+        ftp.login(credentials['username'], credentials['password'])
+        ftp.cwd('upload')
+        logging.info(f"Transferring file: {filename}")
+        response = ftp.storbinary(f"STOR {filename}", fp=file)
+
+
 def lambda_handler(event, context):
 
     try:
@@ -84,15 +95,7 @@ def lambda_handler(event, context):
             date = datetime.strftime(datetime.now() - timedelta(days=1), '%d-%m-%Y')
             logging.info(f"Using yesterday's date: '{date}'")
 
-        credentials = get_ftp_credentials()
-        data_file_path = get_data_file(date)
-        data_file_name = os.path.basename(data_file_path)
-
-        with FTP(os.environ['FTP_HOST']) as ftp, open(data_file_path, 'rb') as data_file_ptr:
-            ftp.login(credentials['username'], credentials['password'])
-            ftp.cwd('upload')
-            logging.info(f"Transferring file: {data_file_name}")
-            response = ftp.storbinary(f"STOR {data_file_name}", fp=data_file_ptr)
+        transfer_data_file(create_data_file(date))
 
         logging.info("QSP transfer completed")
 
