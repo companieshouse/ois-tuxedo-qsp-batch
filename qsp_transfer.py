@@ -82,7 +82,6 @@ def transfer_data_file(path):
         logging.info(f"Transferring file: {filename}")
         response = ftp.storbinary(f"STOR {filename}", fp=file)
 
-
 def lambda_handler(event, context):
 
     try:
