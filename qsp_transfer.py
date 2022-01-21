@@ -64,7 +64,7 @@ def get_data_file(date):
         events = events + response['events']
 
     date_suffix = datetime.strptime(date, '%d-%m-%Y').strftime('%d%m%Y')
-    file_path = f"/tmp/{os.environ['DATA_FILE_PREFIX']}.{date_suffix}.aws_test"
+    file_path = f"/tmp/{os.environ['DATA_FILE_PREFIX']}.{date_suffix}"
 
     with open(file_path, 'w') as file:
         for event in events:
