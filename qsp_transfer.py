@@ -14,6 +14,25 @@ from datetime import datetime, timedelta
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+def check_environment_variables():
+    required_vars = [
+        'DATA_FILE_PREFIX',
+        'FTP_HOST',
+        'LOG_GROUP_NAME',
+        'SECRET_NAME',
+    ]
+
+    missing_vars = []
+    for env_var in required_vars:
+        if os.getenv(env_var) is None:
+            missing_vars.append(env_var)
+
+    if len(missing_vars) > 0:
+        raise Exception(f"Mandatory environment variable(s) undefined: {', '.join(missing_vars)}")
+
+def get_epoch_time_in_millis(dt: datetime) -> int:
+    return int(time.mktime(dt)) * 1000
+
 def get_ftp_credentials():
     client = boto3.client('secretsmanager')
     get_secret_value_response = client.get_secret_value(SecretId=os.environ['SECRET_NAME'])
@@ -27,11 +46,11 @@ def get_ftp_credentials():
 
 def create_data_file(date):
     if not re.match(r"\d{2}-\d{2}-\d{4}", date):
-        raise Exception(f"Date parameter value '{date}' does not match expected format DD-MM-YYYY")
+        raise Exception(f"Date parameter value '{date}' does not match expected format: DD-MM-YYYY")
 
     log_group = os.environ['LOG_GROUP_NAME']
-    start_time = int(time.mktime(time.strptime(f"{date} 00:00:00", '%d-%m-%Y %H:%M:%S'))) * 1000
-    end_time = int(time.mktime(time.strptime(f"{date} 23:59:59", '%d-%m-%Y %H:%M:%S'))) * 1000
+    start_time = get_epoch_time_in_millis(time.strptime(f"{date} 00:00:00", '%d-%m-%Y %H:%M:%S'))
+    end_time = get_epoch_time_in_millis(time.strptime(f"{date} 23:59:59", '%d-%m-%Y %H:%M:%S'))
 
     logging.info(f"Using log group name: {log_group}")
     logging.info(f"Using epoch start time in milliseconds: {start_time}")
@@ -46,7 +65,7 @@ def create_data_file(date):
         endTime = end_time
     )
 
-    events = events + response['events']
+    events.extend(response['events'])
 
     while 'nextToken' in response.keys():
         token = response['nextToken']
@@ -57,7 +76,10 @@ def create_data_file(date):
             nextToken = token
         )
 
-        events = events + response['events']
+        events.extend(response['events'])
+
+    if len(events) == 0:
+        return '';
 
     date_suffix = datetime.strptime(date, '%d-%m-%Y').strftime('%d%m%Y')
     file_path = f"/tmp/{os.environ['DATA_FILE_PREFIX']}.{date_suffix}"
@@ -80,7 +102,7 @@ def transfer_data_file(path):
 
 def lambda_handler(event, context):
     try:
-        logger.info(f'Event: {event}')
+        check_environment_variables()
 
         if 'date' in event:
             date = event['date']
@@ -89,9 +111,13 @@ def lambda_handler(event, context):
             date = datetime.strftime(datetime.now() - timedelta(days=1), '%d-%m-%Y')
             logging.info(f"Using yesterday's date: '{date}'")
 
-        transfer_data_file(create_data_file(date))
+        path = create_data_file(date)
 
-        logging.info("QSP transfer completed")
+        if not path:
+            logger.info("No data for given time period; processing complete")
+        else:
+            transfer_data_file(path)
+            logging.info("Data file transfer completed")
 
         return {
             'statusCode': 200
