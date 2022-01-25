@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-def check_environment_variables():
+def check_environment_variables() -> None:
     required_vars = [
         'DATA_FILE_PREFIX',
         'FTP_HOST',
@@ -33,7 +33,7 @@ def check_environment_variables():
 def get_epoch_time_in_millis(dt: datetime) -> int:
     return int(time.mktime(dt)) * 1000
 
-def get_ftp_credentials():
+def get_ftp_credentials() -> str:
     client = boto3.client('secretsmanager')
     get_secret_value_response = client.get_secret_value(SecretId=os.environ['SECRET_NAME'])
 
@@ -44,7 +44,7 @@ def get_ftp_credentials():
 
     return json.loads(secret)
 
-def create_data_file(date):
+def create_data_file(date: str) -> str:
     if not re.match(r"\d{2}-\d{2}-\d{4}", date):
         raise Exception(f"Date parameter value '{date}' does not match expected format: DD-MM-YYYY")
 
@@ -90,7 +90,7 @@ def create_data_file(date):
 
     return file_path
 
-def transfer_data_file(path):
+def transfer_data_file(path: str) -> None:
     filename = os.path.basename(path)
     credentials = get_ftp_credentials()
 
