@@ -27,7 +27,7 @@ def check_environment_variables() -> None:
         if os.getenv(env_var) is None:
             missing_vars.append(env_var)
 
-    if len(missing_vars) > 0:
+    if missing_vars:
         raise Exception(f"Mandatory environment variable(s) undefined: {', '.join(missing_vars)}")
 
 def get_epoch_time_in_millis(dt: datetime) -> int:
@@ -78,7 +78,7 @@ def create_data_file(date: str) -> str:
 
         events.extend(response['events'])
 
-    if len(events) == 0:
+    if not events:
         return '';
 
     date_suffix = datetime.strptime(date, '%d-%m-%Y').strftime('%d%m%Y')
