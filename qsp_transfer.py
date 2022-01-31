@@ -119,7 +119,9 @@ def lambda_handler(event, context):
             logger.info("No data for given time period; processing complete")
         else:
             transfer_data_file(path)
-            logging.info("Data file transfer completed")
+            logging.info('Data file transfer completed')
+            os.remove(path)
+            logging.debug(f"Temporary data file removed: '{path}'")
 
         return {
             'statusCode': 200
