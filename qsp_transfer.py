@@ -116,7 +116,7 @@ def lambda_handler(event, context):
         path = create_data_file(date)
 
         if not path:
-            logger.info("No data for given time period; processing complete")
+            logger.info('No data for given time period; processing complete')
         else:
             transfer_data_file(path)
             logging.info('Data file transfer completed')
