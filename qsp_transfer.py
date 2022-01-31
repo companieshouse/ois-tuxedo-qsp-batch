@@ -19,6 +19,7 @@ def check_environment_variables() -> None:
     required_vars = [
         'DATA_FILE_PREFIX',
         'FTP_HOST',
+        'FTP_PATH',
         'LOG_GROUP_NAME',
         'SECRET_NAME',
     ]
@@ -97,7 +98,7 @@ def transfer_data_file(path: str) -> None:
 
     with FTP(os.environ['FTP_HOST']) as ftp, open(path, 'rb') as file:
         ftp.login(credentials['username'], credentials['password'])
-        ftp.cwd('upload')
+        ftp.cwd(os.environ['FTP_PATH'])
         logging.info(f"Transferring file: {filename}")
         response = ftp.storbinary(f"STOR {filename}", fp=file)
 
