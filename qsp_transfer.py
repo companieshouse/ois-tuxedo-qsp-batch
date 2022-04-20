@@ -35,7 +35,7 @@ def check_environment_variables() -> None:
 def get_epoch_time_in_millis(dt: datetime) -> int:
     return int(time.mktime(dt)) * 1000
 
-def strip_trailing_comma(text: str):
+def strip_trailing_comma(text: str) -> str:
     return text[:-1] if text[-1]==',' else text
 
 def get_ftp_credentials() -> dict[str, Any]:
