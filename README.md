@@ -17,8 +17,3 @@ The following Lambda function environment variables are required:
 | `FTP_PATH` | The directory path on the remote FTP server to which data will be transferred. |
 | `LOG_GROUP_NAME` | The CloudWatch log group name from which data will be sourced. All log streams for this log group will be considered when processing data, dependent upon the presence of data in those log streams for the time period being processed. |
 | `SECRET_NAME` | The [ARN](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) or name of the secret to retrieve from [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). The secret is expected to contain two key/value pairs, named `username` and `password`, with valid credentials for the remove FTP server to which data will be transferred. |
-
-
-
-
-
