@@ -17,3 +17,19 @@ The following Lambda function environment variables are required:
 | `FTP_PATH` | The directory path on the remote FTP server to which data will be transferred. |
 | `LOG_GROUP_NAME` | The CloudWatch log group name from which data will be sourced. All log streams for this log group will be considered when processing data, dependent upon the presence of data in those log streams for the time period being processed. |
 | `SECRET_NAME` | The [ARN](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) or name of the secret to retrieve from [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). The secret is expected to contain two key/value pairs, named `username` and `password`, with valid credentials for the remove FTP server to which data will be transferred. |
+
+## Schedule
+
+The Lambda function is triggered by an [EventBridge](https://aws.amazon.com/eventbridge/) schedule defined in the `infrastructure` branch of the [ois-tuxedo-stack](https://github.com/companieshouse/ois-tuxedo-stack) project.
+
+## Data processing
+
+At execution time, the function operates on data generated for the previous day by default. To manually trigger the Lambda function for a specific date, [invoke the function using a test event](https://docs.aws.amazon.com/lambda/latest/dg/testing-functions.html) that is configured with a single field named `date` using the date format `DD-MM-YYYY`. For example:
+
+```json
+{
+  "date": "31-01-2022"
+}
+```
+
+
