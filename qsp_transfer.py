@@ -35,6 +35,9 @@ def check_environment_variables() -> None:
 def get_epoch_time_in_millis(dt: datetime) -> int:
     return int(time.mktime(dt)) * 1000
 
+def strip_trailing_comma(text: str):
+    return text[:-1] if text[-1]==',' else text
+
 def get_ftp_credentials() -> dict[str, Any]:
     client = boto3.client('secretsmanager')
     get_secret_value_response = client.get_secret_value(SecretId=os.environ['SECRET_NAME'])
@@ -88,7 +91,7 @@ def create_data_file(date: str) -> str:
 
     with open(file_path, 'w') as file:
         for event in events:
-            file.write(event['message'] + '\n')
+            file.write(strip_trailing_comma(event['message']) + '\n')
 
     return file_path
 
