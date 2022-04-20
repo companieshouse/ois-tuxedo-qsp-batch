@@ -31,5 +31,3 @@ At execution time, the function operates on data generated for the previous day 
   "date": "31-01-2022"
 }
 ```
-
-
